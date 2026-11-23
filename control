@@ -1,0 +1,11 @@
+Package: com.eolnmsuk.quicksettings
+Name: QuickSettings
+Version: 1.0.0
+Architecture: iphoneos-arm
+Depends: firmware (>= 15.0), mobilesubstrate, preferenceloader
+Description: Open an eligible Home Screen app's own Settings page from its context menu.
+Maintainer: EolnMsuk
+Author: EolnMsuk
+Section: Tweaks
+Icon: https://raw.githubusercontent.com/EolnMsuk/QuickSettings/main/quicksettingsprefs/Resources/package-icon.png
+SileoDepiction: https://raw.githubusercontent.com/EolnMsuk/QuickSettings/main/depiction.json
