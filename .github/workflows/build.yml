@@ -1,0 +1,255 @@
+name: Build QuickSettings draft
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  metadata:
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.metadata.outputs.version }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+      - name: Validate version and synchronized release metadata
+        id: metadata
+        run: |
+          python3 scripts/sync-metadata.py --check
+          version=$(python3 scripts/sync-metadata.py --print-version)
+          printf 'version=%s\n' "$version" >> "$GITHUB_OUTPUT"
+          python3 scripts/sync-metadata.py --release-notes > "$RUNNER_TEMP/release-notes.md"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: QuickSettings-release-notes
+          path: ${{ runner.temp }}/release-notes.md
+          if-no-files-found: error
+          overwrite: true
+
+  build:
+    name: Build ${{ matrix.variant }}
+    needs: metadata
+    runs-on: macos-15
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - variant: roothide
+            scheme: roothide
+            package_arch: iphoneos-arm64e
+          - variant: rootless
+            scheme: rootless
+            package_arch: iphoneos-arm64
+          - variant: rootful
+            scheme: ''
+            package_arch: iphoneos-arm
+    env:
+      VARIANT: ${{ matrix.variant }}
+      PACKAGE_SCHEME: ${{ matrix.scheme }}
+      PACKAGE_ARCH: ${{ matrix.package_arch }}
+      SDK_VERSION: '16.5'
+      MINIMUM_IOS: '15.0'
+      VERSION: ${{ needs.metadata.outputs.version }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+      - name: Bootstrap stock Theos and host tools
+        uses: Randomblock1/theos-action@v1
+        with:
+          theos-src: https://github.com/theos/theos
+          theos-sdks: https://github.com/theos/sdks
+      - name: Select native toolchain and SDK
+        run: |
+          stock_theos="${THEOS:?The bootstrap did not export THEOS}"
+          active_theos="$stock_theos"
+          if [[ "$PACKAGE_SCHEME" == roothide ]]; then
+            active_theos="$RUNNER_TEMP/theos-roothide"
+            git clone --no-checkout https://github.com/roothide/theos.git "$active_theos"
+            git -C "$active_theos" checkout --detach 958fea4f779943505b15b93c88bb4db8d97b346d
+            git -C "$active_theos" submodule update --init --recursive
+            [[ -f "$active_theos/vendor/mod/roothide/package/deb.mk" ]] || {
+              echo "The native RootHide scheme is missing." >&2; exit 1;
+            }
+          fi
+          sdk_name="iPhoneOS${SDK_VERSION}.sdk"
+          sdk="$active_theos/sdks/$sdk_name"
+          if [[ ! -d "$sdk" ]]; then
+            mkdir -p "$active_theos/sdks"
+            if [[ -d "$stock_theos/sdks/$sdk_name" ]]; then
+              ln -s "$stock_theos/sdks/$sdk_name" "$sdk"
+            else
+              archive="$RUNNER_TEMP/$sdk_name.tar.xz"
+              curl --fail --silent --show-error --location --retry 3 \
+                --output "$archive" "https://github.com/theos/sdks/releases/latest/download/$sdk_name.tar.xz"
+              tar -xf "$archive" -C "$active_theos/sdks"
+            fi
+          fi
+          [[ -d "$sdk/System/Library/Frameworks" ]] || {
+            echo "Missing/incomplete iOS $SDK_VERSION SDK at $sdk; update the bootstrap source." >&2; exit 1;
+          }
+          xcodebuild -version
+          git -C "$active_theos" rev-parse HEAD
+          printf 'THEOS=%s\nSYSROOT=%s\n' "$active_theos" "$sdk" >> "$GITHUB_ENV"
+          printf '%s\n' "$active_theos/bin" >> "$GITHUB_PATH"
+      - name: Ensure dpkg-deb is available
+        run: |
+          if ! command -v dpkg-deb >/dev/null; then brew install dpkg; fi
+      - name: Build exactly one variant
+        run: |
+          python3 scripts/sync-metadata.py --check
+          python3 - "$PACKAGE_ARCH" <<'PY'
+          from pathlib import Path
+          import re, sys
+          path = Path("control")
+          text, count = re.subn(r"(?m)^Architecture:.*$", "Architecture: " + sys.argv[1], path.read_text())
+          assert count == 1, "Expected one Architecture field"
+          path.write_text(text)
+          PY
+          shopt -s nullglob
+          stale=(packages/*.deb)
+          (( ${#stale[@]} == 0 )) || { echo "Refusing stale packages in checkout." >&2; exit 1; }
+          make_args=(
+            FINALPACKAGE=1
+            "SYSROOT=$SYSROOT"
+            "TARGET=iphone:clang:$SDK_VERSION:$MINIMUM_IOS"
+            "ARCHS=arm64 arm64e"
+          )
+          unset THEOS_PACKAGE_SCHEME
+          if [[ -n "$PACKAGE_SCHEME" ]]; then make_args+=("THEOS_PACKAGE_SCHEME=$PACKAGE_SCHEME"); fi
+          make package "${make_args[@]}"
+      - name: Verify package before upload
+        id: package
+        run: |
+          shopt -s nullglob
+          packages=(packages/*.deb)
+          (( ${#packages[@]} == 1 )) || { echo "Expected one fresh package." >&2; exit 1; }
+          bash .github/scripts/verify-package.sh "${packages[0]}" "$VARIANT" "$PACKAGE_ARCH" "$VERSION" "$MINIMUM_IOS"
+          mkdir -p output
+          asset="output/com.eolnmsuk.QuickSettings_${VERSION}_${VARIANT}.deb"
+          mv "${packages[0]}" "$asset"
+          printf 'asset=%s\n' "$asset" >> "$GITHUB_OUTPUT"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: QuickSettings-package-${{ matrix.variant }}
+          path: ${{ steps.package.outputs.asset }}
+          if-no-files-found: error
+          overwrite: true
+
+  release:
+    name: Prepare versioned draft
+    needs: [metadata, build]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    concurrency:
+      group: quicksettings-release-${{ needs.metadata.outputs.version }}
+      cancel-in-progress: false
+    env:
+      VERSION: ${{ needs.metadata.outputs.version }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: QuickSettings-package-*
+          path: output
+          merge-multiple: true
+      - uses: actions/download-artifact@v4
+        with:
+          name: QuickSettings-release-notes
+          path: notes
+      - name: Check source and exact artifact set before any release write
+        run: |
+          python3 scripts/sync-metadata.py --check
+          python3 scripts/sync-metadata.py --release-notes > "$RUNNER_TEMP/expected-notes.md"
+          cmp "$RUNNER_TEMP/expected-notes.md" notes/release-notes.md
+          python3 - <<'PY'
+          from pathlib import Path
+          import os
+          expected = {f"com.eolnmsuk.QuickSettings_{os.environ['VERSION']}_{v}.deb"
+                      for v in ("roothide", "rootless", "rootful")}
+          actual = list(Path("output").iterdir())
+          assert {p.name for p in actual} == expected and len(actual) == 3, actual
+          assert all(p.is_file() and not p.is_symlink() for p in actual), actual
+          PY
+      - name: Create or update matching draft only
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const version = process.env.VERSION;
+            const tag = 'v' + version;
+            const sha = context.sha;
+            const {owner, repo} = context.repo;
+            const variants = ['roothide', 'rootless', 'rootful'];
+            const names = variants.map(v => 'com.eolnmsuk.QuickSettings_' + version + '_' + v + '.deb');
+            const notes = fs.readFileSync('notes/release-notes.md', 'utf8').trim();
+            if (!notes || !/^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)$/.test(version)) {
+              throw new Error('Invalid release version or empty changelog.');
+            }
+            const actual = fs.readdirSync('output').sort();
+            if (JSON.stringify(actual) !== JSON.stringify([...names].sort()) ||
+                names.some(n => !fs.lstatSync('output/' + n).isFile())) {
+              throw new Error('Unexpected release asset set.');
+            }
+            const releases = await github.paginate(github.rest.repos.listReleases, {owner, repo, per_page: 100});
+            const matches = releases.filter(r => r.tag_name === tag);
+            if (matches.length > 1) throw new Error('Multiple releases use this version tag; resolve manually.');
+            let release = matches[0];
+            if (release && !release.draft) throw new Error('This version is already published. Bump control and changelog.');
+            if (release && release.target_commitish !== sha) {
+              throw new Error('Existing draft targets another source commit. Bump the version or resolve the draft manually.');
+            }
+            let ref;
+            try {
+              ref = (await github.rest.git.getRef({owner, repo, ref: 'tags/' + tag})).data.object;
+            } catch (error) { if (error.status !== 404) throw error; }
+            for (let depth = 0; ref && ref.type === 'tag' && depth < 8; depth++) {
+              ref = (await github.rest.git.getTag({owner, repo, tag_sha: ref.sha})).data.object;
+            }
+            if (ref && (ref.type !== 'commit' || ref.sha !== sha)) {
+              throw new Error('Version tag points to another source commit. Bump the version; tags are never retargeted.');
+            }
+            let assets = release ? await github.paginate(github.rest.repos.listReleaseAssets,
+              {owner, repo, release_id: release.id, per_page: 100}) : [];
+            if (assets.some(a => !names.includes(a.name))) {
+              throw new Error('Existing draft has unexpected assets; review it manually before rerunning.');
+            }
+            const tick = String.fromCharCode(96);
+            const table = names.map((n, i) => '| ' + tick + n + tick + ' | ' +
+              (i === 0 ? 'Native RootHide' : variants[i]) + ' |').join('\n');
+            const body = notes + '\n\n| Package | Environment |\n| --- | --- |\n' + table +
+              '\n\nTargets iOS 15.0+. Review and test the matching package before publishing.\n';
+            const fields = {owner, repo, tag_name: tag, target_commitish: sha,
+              name: 'QuickSettings v' + version, body, draft: true, prerelease: false};
+            // Every guard above runs before the first release mutation.
+            release = release
+              ? (await github.rest.repos.updateRelease({...fields, release_id: release.id})).data
+              : (await github.rest.repos.createRelease(fields)).data;
+            for (const asset of assets) {
+              await github.rest.repos.deleteReleaseAsset({owner, repo, asset_id: asset.id});
+            }
+            for (const name of names) {
+              const data = fs.readFileSync('output/' + name);
+              await github.rest.repos.uploadReleaseAsset({owner, repo, release_id: release.id,
+                name, data, headers: {'content-type': 'application/vnd.debian.binary-package',
+                  'content-length': data.length}});
+            }
+            const final = (await github.rest.repos.getRelease({owner, repo, release_id: release.id})).data;
+            assets = await github.paginate(github.rest.repos.listReleaseAssets, {owner, repo, release_id: release.id, per_page: 100});
+            if (!final.draft || JSON.stringify(assets.map(a => a.name).sort()) !== JSON.stringify([...names].sort())) {
+              throw new Error('Draft verification failed; inspect the draft and rerun.');
+            }
+            core.notice('Prepared draft QuickSettings v' + version + ' at ' + final.html_url);
