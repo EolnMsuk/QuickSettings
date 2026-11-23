@@ -58,7 +58,7 @@
         },
         {
           "class": "DepictionMarkdownView",
-          "markdown": "## 1.0.0\n\n- Initial release of QuickSettings by EolnMsuk.\n- Adds **App Settings** to eligible Home Screen app menus for direct access to that app's Settings page, including permission-only pages exposed by the native model.\n- Hides the action when no app-specific destination is available and preserves other quick actions.\n- Adds a live **Enable QuickSettings** switch, matching light/dark artwork, and a version, iOS, and environment footer.\n- Includes manual stable-release checks, GitHub and Reddit links, and Venmo or tap-to-copy crypto donations.\n- Provides native RootHide, rootless, and rootful build configurations targeting iOS 15.0 and later.",
+          "markdown": "## 1.0.0\n\n- Initial release of QuickSettings by EolnMsuk.\n- Adds **App Settings** to eligible Home Screen app menus for direct access to that app's Settings page.\n- Hides the action when no app-specific destination is available and preserves other quick actions.\n- Adds a live **Enable QuickSettings** switch, matching light/dark artwork, and a version, iOS, and environment footer.\n- Includes manual stable-release checks, GitHub and Reddit links, and Venmo or tap-to-copy crypto donations.\n- Provides native RootHide, rootless, and rootful build configurations targeting iOS 15.0 and later.",
           "useRawFormat": false
         }
       ]
