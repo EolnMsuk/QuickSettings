@@ -1,0 +1,9 @@
+.theos/
+/.theos-toolchain/
+/iPhoneOS*.sdk.tar.xz
+packages/
+output/
+*.deb
+__pycache__/
+*.pyc
+.DS_Store
