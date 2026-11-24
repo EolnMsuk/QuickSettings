@@ -1,11 +1,11 @@
 # QuickSettings
 
+**QuickSettings** adds **Settings** to Home Screen 3rd party application long-press context menus.
+
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="quicksettingsprefs/Resources/banner-dark.png">
-  <img src="quicksettingsprefs/Resources/banner-light.png" alt="QuickSettings by EolnMsuk — App settings. One press away." width="100%">
+  <img src="quicksettingsprefs/Resources/banner-light.png" alt="QuickSettings by EolnMsuk — App settings. One press away." width="65%">
 </picture>
-
-**QuickSettings** adds **Settings** to Home Screen 3rd party application long-press context menus.
 
 ## Install
 
