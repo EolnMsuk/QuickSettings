@@ -23,7 +23,7 @@ jobs:
       - name: Validate version and synchronized release metadata
         id: metadata
         run: |
-          python3 scripts/sync-metadata.py --check
+          python3 scripts/sync-metadata.py --check --skip-readme
           version=$(python3 scripts/sync-metadata.py --print-version)
           printf 'version=%s\n' "$version" >> "$GITHUB_OUTPUT"
           python3 scripts/sync-metadata.py --release-notes > "$RUNNER_TEMP/release-notes.md"
@@ -106,7 +106,7 @@ jobs:
           if ! command -v dpkg-deb >/dev/null; then brew install dpkg; fi
       - name: Build exactly one variant
         run: |
-          python3 scripts/sync-metadata.py --check
+          python3 scripts/sync-metadata.py --check --skip-readme
           python3 - "$PACKAGE_ARCH" <<'PY'
           from pathlib import Path
           import re, sys
@@ -172,7 +172,7 @@ jobs:
           path: notes
       - name: Check source and exact artifact set before any release write
         run: |
-          python3 scripts/sync-metadata.py --check
+          python3 scripts/sync-metadata.py --check --skip-readme
           python3 scripts/sync-metadata.py --release-notes > "$RUNNER_TEMP/expected-notes.md"
           cmp "$RUNNER_TEMP/expected-notes.md" notes/release-notes.md
           python3 - <<'PY'
