@@ -5,7 +5,7 @@
   <img src="quicksettingsprefs/Resources/banner-light.png" alt="QuickSettings by EolnMsuk — App settings. One press away." width="100%">
 </picture>
 
-**QuickSettings** by **EolnMsuk** adds **App Settings** to eligible Home Screen application menus. Long-press an app icon to open that app's own Settings page. Other stock and tweak quick actions keep their order.
+**QuickSettings** by **EolnMsuk** adds **App Settings** to eligible Home Screen application menus. Long-press an app icon to open that app's own Settings page.
 
 ## Install
 
