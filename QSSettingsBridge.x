@@ -91,10 +91,12 @@ static NSString *QSIdentity(id row, BOOL appContext, BOOL keyValidated, NSString
     // Preferences .bundle identifier/path is deliberately not an app association.
     if (!associated && [bundleValue isKindOfClass:NSBundle.class]) {
         NSBundle *bundle = bundleValue;
+        NSURL *bundleURL = bundle.bundleURL;
         id<QSAppProxy> proxy = QSProxy(bundle.bundleIdentifier, NULL);
         NSURL *url = QSCanCall(proxy, @selector(bundleURL), "@", "") ? [proxy bundleURL] : nil;
-        if ([bundle.bundleURL.pathExtension isEqual:@"app"] && [url isKindOfClass:NSURL.class]
-            && [bundle.bundleURL.standardizedFileURL isEqual:url.standardizedFileURL]) {
+        if ([bundleURL.pathExtension isEqual:@"app"] && [url isKindOfClass:NSURL.class]
+            && bundleURL.isFileURL && url.isFileURL
+            && [bundleURL.URLByStandardizingPath isEqual:url.URLByStandardizingPath]) {
             associated = bundle.bundleIdentifier; kind = @"native-application-bundle";
         }
     }
