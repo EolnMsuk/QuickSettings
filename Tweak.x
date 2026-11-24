@@ -61,7 +61,7 @@ static BOOL QSShortcutClassReady(Class cls) {
     [items removeObjectsAtIndexes:duplicates];
     if (!QSPaneResolver.sharedResolver.isEnabled) return duplicates.count ? [items copy] : original;
     NSString *bundleID = QSBundleIDForIcon(self);
-    if (!bundleID) {
+    if (!bundleID || ![QSPaneResolver.sharedResolver hasSettingsForBundleIdentifier:bundleID]) {
         return duplicates.count ? [items copy] : original;
     }
     Class itemClass = NSClassFromString(@"SBSApplicationShortcutItem");

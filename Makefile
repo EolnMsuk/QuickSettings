@@ -15,7 +15,7 @@ endif
 include $(THEOS)/makefiles/common.mk
 
 TWEAK_NAME = QuickSettings
-QuickSettings_FILES = Tweak.x QSPreferences.m QSPaneResolver.m
+QuickSettings_FILES = Tweak.x QSPreferences.m QSPaneResolver.m QSSettingsEligibility.m
 QuickSettings_CFLAGS = -fobjc-arc -DQS_BUILD_ENVIRONMENT=$(QS_ENVIRONMENT)
 QuickSettings_FRAMEWORKS = Foundation UIKit
 

@@ -1,4 +1,4 @@
-// Narrow SpringBoard shortcut declarations; every private call is ABI-guarded.
+// Narrow shortcut/model declarations; every private call is ABI-guarded.
 // Matching a signature does not establish runtime compatibility on every iOS.
 #pragma once
 #import <Foundation/Foundation.h>
@@ -32,6 +32,35 @@
 @protocol QSShortcutSystemIcon <NSObject>
 - (id)initWithSystemImageName:(NSString *)name;
 @end
+
+// Recovered pre-1.0.1 declarations; provenance and runtime limits: plan.md.
+// These are non-controller model calls. Thread affinity is not device-verified.
+@protocol QSSystemPolicy <NSObject>
++ (id)thirdPartyApplications;
++ (id)specifiersForThirdPartyApps:(id)applications;
+@end
+@protocol QSNativeApp <NSObject>
+- (id)proxy;
+@end
+@protocol QSNativeSpecifier <NSObject>
+- (id)identifier;
+- (long long)cellType;
+@end
+@protocol QSAppProxy <NSObject>
++ (id)applicationProxyForIdentifier:(NSString *)identifier;
+- (id)applicationIdentifier;
+- (BOOL)isInstalled;
+- (BOOL)isPlaceholder;
+- (BOOL)isRestricted;
+@end
+@protocol QSWorkspace <NSObject>
++ (id)defaultWorkspace;
+- (void)addObserver:(id)observer;
+@end
+@protocol QSDetailProvider <NSObject>
++ (id)preferencesURL;
+@end
+
 // expectedReturn is a set of accepted encodings; args describes explicit args.
 // BOOL is B on the intended ABI; c is accepted for older Objective-C metadata.
 static inline BOOL QSMethodSignature(Method method, const char *expectedReturn, const char *args) {

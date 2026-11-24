@@ -1,6 +1,6 @@
 Package: com.eolnmsuk.quicksettings
 Name: QuickSettings
-Version: 1.0.1
+Version: 1.0.2
 Architecture: iphoneos-arm
 Depends: firmware (>= 15.0), mobilesubstrate, preferenceloader
 Description: Open an app's own Settings page from its Home Screen context menu.

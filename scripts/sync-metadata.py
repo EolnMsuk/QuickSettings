@@ -74,7 +74,7 @@ def exactly_one(values, description):
     return values[0]
 
 
-def synchronize(version, history, check):
+def synchronize(version, history, check, skip_readme=False):
     drift = []
     info_path = ROOT / "quicksettingsprefs/Resources/Info.plist"
     info = plistlib.loads(info_path.read_bytes())
@@ -99,23 +99,27 @@ def synchronize(version, history, check):
         if not check:
             depiction_path.write_text(json.dumps(depiction, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
 
-    readme_path = ROOT / "README.md"
-    readme = readme_path.read_text(encoding="utf-8")
-    if readme.count(START) != 1 or readme.count(END) != 1 or readme.index(START) >= readme.index(END):
-        raise ValueError("README must contain exactly one ordered release-assets marker pair.")
-    start, end = readme.index(START), readme.index(END) + len(END)
-    expected_readme = readme[:start] + asset_block(version) + readme[end:]
-    if readme != expected_readme:
-        drift.append("README.md")
-        if not check:
-            readme_path.write_text(expected_readme, encoding="utf-8", newline="\n")
+    if not skip_readme:
+        readme_path = ROOT / "README.md"
+        readme = readme_path.read_text(encoding="utf-8")
+        if readme.count(START) != 1 or readme.count(END) != 1 or readme.index(START) >= readme.index(END):
+            raise ValueError("README must contain exactly one ordered release-assets marker pair.")
+        start, end = readme.index(START), readme.index(END) + len(END)
+        expected_readme = readme[:start] + asset_block(version) + readme[end:]
+        if readme != expected_readme:
+            drift.append("README.md")
+            if not check:
+                readme_path.write_text(expected_readme, encoding="utf-8", newline="\n")
     if drift and check:
-        raise ValueError("Metadata drift: " + ", ".join(drift) + ". Run python3 scripts/sync-metadata.py.")
+        command = "python3 scripts/sync-metadata.py" + (" --skip-readme" if skip_readme else "")
+        raise ValueError("Metadata drift: " + ", ".join(drift) + ". Run " + command + ".")
     return drift
 
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--skip-readme", action="store_true",
+                        help="exclude only README validation, generation and writes")
     mode = parser.add_mutually_exclusive_group()
     mode.add_argument("--check", action="store_true", help="fail on metadata drift, without writing")
     mode.add_argument("--release-notes", action="store_true", help="print only the current version's notes")
@@ -129,7 +133,9 @@ def main():
         elif args.release_notes:
             sys.stdout.write(notes)
         else:
-            changed = synchronize(version, history, args.check)
+            if args.skip_readme:
+                print("README.md excluded (--skip-readme).")
+            changed = synchronize(version, history, args.check, args.skip_readme)
             print(f"QuickSettings {version}: " + ("metadata consistent." if not changed else "synchronized " + ", ".join(changed)))
     except (ValueError, KeyError, OSError, plistlib.InvalidFileException, json.JSONDecodeError) as error:
         print(f"Metadata error: {error}", file=sys.stderr)
