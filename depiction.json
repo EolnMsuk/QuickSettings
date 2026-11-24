@@ -21,7 +21,7 @@
         },
         {
           "class": "DepictionMarkdownView",
-          "markdown": "**QuickSettings** by **EolnMsuk** adds **App Settings** to an eligible Home Screen app's context menu. Long-press its icon to jump to its own Settings page.\n\nOnly apps with a destination exposed by the supported native Settings adapters receive the action. Existing quick actions remain in order.\n\nEnable it in **Settings > QuickSettings**; the switch applies live. The pane includes matching light/dark artwork, manual update checks, support links, and donation options.\n\nTargets **iOS 15.0+** with separate native **RootHide**, **rootless**, and **rootful** packages. The private API baseline is sourced from iOS 15–17; package builds and device compatibility still require validation. Some built-in pages and later Settings redesigns need adapter checks.",
+          "markdown": "**QuickSettings** by **EolnMsuk** adds **App Settings** to Home Screen application menus. Long-press an app icon to request its own Settings page.\n\nThe action appears on real application icons without an app-list scan or cache warmup, including apps without a dedicated page. Folder, bookmark, and widget icons are excluded. Existing quick actions remain in order.\n\nVersion **1.0.1** uses one asynchronous UIKit request, revised app routes, and expanded built-in routes. Enable it in **Settings > QuickSettings**; the switch applies live and invalidates pending work. The pane includes matching light/dark artwork, manual update checks, support links, and donation options.\n\nTargets **iOS 15.0+** with separate native **RootHide**, **rootless**, and **rootful** packages. Explicit built-in roots apply to iOS 15–17; other targets use the generic app route. Ready for manual build and device testing: cold/warm navigation and responsiveness remain unverified, and accepting a URL does not verify the displayed page.",
           "useRawFormat": false
         },
         {
@@ -58,7 +58,7 @@
         },
         {
           "class": "DepictionMarkdownView",
-          "markdown": "## 1.0.0\n\n- Initial release of QuickSettings by EolnMsuk.\n- Adds **App Settings** to eligible Home Screen app menus for direct access to that app's Settings page.\n- Hides the action when no app-specific destination is available and preserves other quick actions.\n- Adds a live **Enable QuickSettings** switch, matching light/dark artwork, and a version, iOS, and environment footer.\n- Includes manual stable-release checks, GitHub and Reddit links, and Venmo or tap-to-copy crypto donations.\n- Provides native RootHide, rootless, and rootful build configurations targeting iOS 15.0 and later.",
+          "markdown": "## 1.0.1\n\n- Replaces the synchronous LaunchServices opener with one asynchronous UIKit Settings request after shortcut handling returns.\n- Removes native app/specifier discovery, per-tap full refreshes, and cache warmup; shows **App Settings** on all real application icons, including apps without a dedicated Settings page.\n- Uses `App-prefs:<bundle-id>` for app destinations and explicit iOS 15–17 built-in routes, adding Mail, Contacts, Calendar, Camera, Voice Memos, Translate, Measure, Books, Health, Wallet, Shortcuts, Podcasts, News, and Home.\n- Moves SpringBoard's committed preference reads to a serial worker, cancels stale pending requests on preference changes or newer selections, and coalesces identical pending requests.\n\n## 1.0.0\n\n- Initial release of QuickSettings by EolnMsuk.\n- Adds **App Settings** to eligible Home Screen app menus for direct access to that app's Settings page.\n- Hides the action when no app-specific destination is available and preserves other quick actions.\n- Adds a live **Enable QuickSettings** switch, matching light/dark artwork, and a version, iOS, and environment footer.\n- Includes manual stable-release checks, GitHub and Reddit links, and Venmo or tap-to-copy crypto donations.\n- Provides native RootHide, rootless, and rootful build configurations targeting iOS 15.0 and later.",
           "useRawFormat": false
         }
       ]
@@ -70,7 +70,7 @@
         {
           "class": "DepictionTableTextView",
           "title": "Version",
-          "text": "1.0.0"
+          "text": "1.0.1"
         },
         {
           "class": "DepictionTableTextView",

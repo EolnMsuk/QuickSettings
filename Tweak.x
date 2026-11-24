@@ -1,11 +1,7 @@
-// QuickSettings — EolnMsuk. See LICENSE. Hook evidence: plan.md R1–R6.
+// QuickSettings — EolnMsuk. See LICENSE. Private hook signatures are checked below.
 #import "QSConstants.h"
 #import "QSPrivateInterfaces.h"
-#import "QSPreferences.h"
 #import "QSPaneResolver.h"
-#include <stdatomic.h>
-
-static atomic_bool QSEnabled;
 
 static BOOL QSIsOurItem(id item) {
     return QSCanCall(item, @selector(type), "@", "")
@@ -63,9 +59,9 @@ static BOOL QSShortcutClassReady(Class cls) {
         return QSIsOurItem(item);
     }];
     [items removeObjectsAtIndexes:duplicates];
-    if (!atomic_load_explicit(&QSEnabled, memory_order_relaxed)) return duplicates.count ? [items copy] : original;
+    if (!QSPaneResolver.sharedResolver.isEnabled) return duplicates.count ? [items copy] : original;
     NSString *bundleID = QSBundleIDForIcon(self);
-    if (!bundleID || [QSPaneResolver.sharedResolver cachedResolutionForBundleIdentifier:bundleID].state != QSPaneStateAvailable) {
+    if (!bundleID) {
         return duplicates.count ? [items copy] : original;
     }
     Class itemClass = NSClassFromString(@"SBSApplicationShortcutItem");
@@ -91,7 +87,7 @@ static BOOL QSShortcutClassReady(Class cls) {
 + (void)activateShortcut:(id)item withBundleIdentifier:(id)bundleID forIconView:(id)iconView {
     if (!QSIsOurItem(item)) { %orig; return; }
     // Always consume our action, including disabled or stale-menu failures.
-    if (!atomic_load_explicit(&QSEnabled, memory_order_relaxed) || !QSReadEnabled()) return;
+    if (!QSPaneResolver.sharedResolver.isEnabled) return;
     id payload = QSCanCall(item, @selector(userInfo), "@", "") ? [(id<QSShortcutItem>)item userInfo] : nil;
     id target = [payload isKindOfClass:NSDictionary.class] ? payload[QSTargetBundleKey] : nil;
     if (!QSValidBundleIdentifier(target)) {
@@ -106,9 +102,7 @@ static BOOL QSShortcutClassReady(Class cls) {
 
 static void QSReloadPreferences(CFNotificationCenterRef center, void *observer,
                                  CFStringRef name, const void *object, CFDictionaryRef userInfo) {
-    BOOL enabled = QSReadEnabled();
-    atomic_store_explicit(&QSEnabled, enabled, memory_order_relaxed);
-    [QSPaneResolver.sharedResolver setEnabled:enabled];
+    [QSPaneResolver.sharedResolver reloadPreferences];
 }
 
 %ctor {
@@ -124,7 +118,7 @@ static void QSReloadPreferences(CFNotificationCenterRef center, void *observer,
         CFNotificationCenterAddObserver(CFNotificationCenterGetDarwinNotifyCenter(), NULL,
             QSReloadPreferences, QS_RELOAD_NOTIFICATION, NULL, CFNotificationSuspensionBehaviorDeliverImmediately);
         NSLog(@"[QuickSettings] Installed dormant hooks (%@).", QSInstalledEnvironment());
-        // Warm after startup without running private-model work in the constructor.
-        dispatch_async(dispatch_get_main_queue(), ^{ QSReloadPreferences(NULL, NULL, NULL, NULL, NULL); });
+        // The callback only queues a committed read; no CFPreferences IPC here.
+        QSReloadPreferences(NULL, NULL, NULL, NULL, NULL);
     }
 }

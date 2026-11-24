@@ -1,5 +1,12 @@
 # QuickSettings Changelog
 
+## 1.0.1
+
+- Replaces the synchronous LaunchServices opener with one asynchronous UIKit Settings request after shortcut handling returns.
+- Removes native app/specifier discovery, per-tap full refreshes, and cache warmup; shows **App Settings** on all real application icons, including apps without a dedicated Settings page.
+- Uses `App-prefs:<bundle-id>` for app destinations and explicit iOS 15–17 built-in routes, adding Mail, Contacts, Calendar, Camera, Voice Memos, Translate, Measure, Books, Health, Wallet, Shortcuts, Podcasts, News, and Home.
+- Moves SpringBoard's committed preference reads to a serial worker, cancels stale pending requests on preference changes or newer selections, and coalesces identical pending requests.
+
 ## 1.0.0
 
 - Initial release of QuickSettings by EolnMsuk.

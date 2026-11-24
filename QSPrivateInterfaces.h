@@ -1,5 +1,5 @@
-// Narrow declarations from plan.md R1–R14 (iOS 15.3.1/15.5, 16, 17).
-// Header evidence establishes ABI, not successful SpringBoard model access.
+// Narrow SpringBoard shortcut declarations; every private call is ABI-guarded.
+// Matching a signature does not establish runtime compatibility on every iOS.
 #pragma once
 #import <Foundation/Foundation.h>
 #import <UIKit/UIKit.h>
@@ -15,7 +15,7 @@
 + (void)activateShortcut:(id)item withBundleIdentifier:(id)bundleID forIconView:(id)iconView;
 @end
 
-// Additional iOS 15.5 SBIcon declarations; see ProjectOverview source notes.
+// Optional icon predicates supplement the required application-icon check.
 @protocol QSHomeIcon <NSObject>
 - (BOOL)isApplicationIcon;
 - (BOOL)isFolderIcon;
@@ -32,33 +32,6 @@
 @protocol QSShortcutSystemIcon <NSObject>
 - (id)initWithSystemImageName:(NSString *)name;
 @end
-@protocol QSSystemPolicy <NSObject>
-+ (id)thirdPartyApplications;
-+ (id)specifiersForThirdPartyApps:(id)applications;
-@end
-@protocol QSNativeApp <NSObject>
-- (id)proxy;
-@end
-@protocol QSNativeSpecifier <NSObject>
-- (id)identifier;
-- (long long)cellType;
-@end
-@protocol QSAppProxy <NSObject>
-+ (id)applicationProxyForIdentifier:(NSString *)identifier;
-- (id)applicationIdentifier;
-- (BOOL)isInstalled;
-- (BOOL)isPlaceholder;
-- (BOOL)isRestricted;
-@end
-@protocol QSWorkspace <NSObject>
-+ (id)defaultWorkspace;
-- (BOOL)openSensitiveURL:(NSURL *)url withOptions:(NSDictionary *)options;
-- (void)addObserver:(id)observer;
-@end
-@protocol QSDetailProvider <NSObject>
-+ (id)preferencesURL;
-@end
-
 // expectedReturn is a set of accepted encodings; args describes explicit args.
 // BOOL is B on the intended ABI; c is accepted for older Objective-C metadata.
 static inline BOOL QSMethodSignature(Method method, const char *expectedReturn, const char *args) {
