@@ -17,7 +17,7 @@
 
 Download from the [published releases](https://github.com/EolnMsuk/QuickSettings/releases). Open the matching `.deb` in your jailbreak package manager, such as Sileo, and follow its installation instructions. Let the package manager perform any initial process reload it requires to load a newly installed tweak.
 
-## Enable and use
+## Usage
 
 1. Open **Settings > QuickSettings** and turn on **Enable QuickSettings**.
 2. Long-press a Home Screen 3rd party app.
