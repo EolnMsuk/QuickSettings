@@ -1,5 +1,11 @@
 # QuickSettings Changelog
 
+## 1.0.4
+
+- Restored the 1.0.2 Settings-opening and eligibility flow after the reported 1.0.3 regression.
+- Added a focused **App Settings** fallback for Stocks and Voice Memos on iOS 15-17.
+- Restored the 30-second discovery snapshot: cold or expired discovery may temporarily hide the action, and stale menu selections may cancel.
+
 ## 1.0.3
 
 - Fixed missing **App Settings** shortcuts for built-in apps, including Stocks and Voice Memos.

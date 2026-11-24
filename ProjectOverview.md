@@ -16,9 +16,9 @@ QuickSettings/
 |-- QSPreferences.h                       # Preference interface
 |-- QSPreferences.m                       # Preference storage and updates
 |-- QSPaneResolver.h                      # Settings opening interface
-|-- QSPaneResolver.m                      # Captured destinations, cancellation, and asynchronous opening
-|-- QSSettingsEligibility.h               # Immutable Settings destination and evidence interface
-|-- QSSettingsEligibility.m               # Native/custom discovery, app-root catalog, manifests, and cache
+|-- QSPaneResolver.m                      # Eligibility-checked routing, cancellation, and asynchronous opening
+|-- QSSettingsEligibility.h               # Eligibility states and generation checks
+|-- QSSettingsEligibility.m               # Native discovery, built-in providers, Stocks/Voice Memos fallback, and snapshot cache
 |-- QSSettingsSupport.h                   # Shared helpers and opt-in diagnostic flag
 |-- QSSettingsSupport.m                   # Bundle-ID validation and bounded diagnostics
 |-- quicksettingsprefs/

@@ -5,12 +5,61 @@
 #import "QSSettingsSupport.h"
 #import <UIKit/UIKit.h>
 
+static NSDictionary<NSString *, NSString *> *QSLegacyBuiltinRoots(void) {
+    static NSDictionary *roots;
+    static dispatch_once_t once;
+    dispatch_once(&once, ^{
+        // Empirical iOS 15–17 roots, not live pane eligibility or a page guarantee.
+        // Keep exact case for both IDs and roots; eligibility is established separately.
+        roots = @{
+            @"com.apple.mobilesafari": @"SAFARI",
+            @"com.apple.mobilephone": @"Phone",
+            @"com.apple.MobileSMS": @"MESSAGES",
+            @"com.apple.facetime": @"FACETIME",
+            @"com.apple.Maps": @"MAPS",
+            @"com.apple.Music": @"MUSIC",
+            @"com.apple.mobilenotes": @"NOTES",
+            @"com.apple.reminders": @"REMINDERS",
+            @"com.apple.compass": @"COMPASS",
+            @"com.apple.mobileslideshow": @"Photos",
+            @"com.apple.AppStore": @"STORE",
+            @"com.apple.mobilemail": @"MAIL",
+            @"com.apple.MobileAddressBook": @"CONTACTS",
+            @"com.apple.mobilecal": @"CALENDAR",
+            @"com.apple.camera": @"CAMERA",
+            @"com.apple.stocks": @"STOCKS",
+            @"com.apple.VoiceMemos": @"VOICE_MEMOS",
+            @"com.apple.Translate": @"TRANSLATE",
+            @"com.apple.measure": @"MEASURE",
+            @"com.apple.iBooks": @"IBOOKS",
+            @"com.apple.Health": @"HEALTH",
+            @"com.apple.Passbook": @"PASSBOOK",
+            @"com.apple.shortcuts": @"SHORTCUTS",
+            @"com.apple.podcasts": @"com.apple.podcasts",
+            @"com.apple.news": @"NEWS",
+            @"com.apple.Home": @"HOMEKIT"
+        };
+    });
+    return roots;
+}
+
+static NSURL *QSSettingsURL(NSString *bundleID, NSString **routeKind) {
+    NSInteger major = NSProcessInfo.processInfo.operatingSystemVersion.majorVersion;
+    // The iOS 18+ Settings redesign is outside the legacy table's evidence.
+    NSString *root = major >= 15 && major < 18 ? QSLegacyBuiltinRoots()[bundleID] : nil;
+    *routeKind = root ? @"builtin-root" : @"app";
+    NSCharacterSet *componentCharacters = [NSCharacterSet characterSetWithCharactersInString:
+        @"abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-._~"];
+    NSString *encoded = [(root ?: bundleID) stringByAddingPercentEncodingWithAllowedCharacters:componentCharacters];
+    if (!encoded.length) return nil;
+    return [NSURL URLWithString:[(root ? @"prefs:root=" : @"App-prefs:") stringByAppendingString:encoded]];
+}
+
 @interface QSOpenRequest : NSObject
 @property (nonatomic) NSUInteger identifier;
 @property (nonatomic) NSUInteger preferenceGeneration;
 @property (nonatomic) NSUInteger eligibilityGeneration;
 @property (nonatomic, copy) NSString *target;
-@property (nonatomic, strong) QSSettingsDestination *destination;
 @property (nonatomic) NSTimeInterval started;
 @property (nonatomic) BOOL traceEnabled;
 @end
@@ -57,7 +106,7 @@ static void QSRequestTrace(QSOpenRequest *request, NSString *routeKind, NSString
 }
 
 - (BOOL)hasSettingsForBundleIdentifier:(NSString *)bundleID {
-    return self.isEnabled && [_eligibility destinationForBundleIdentifier:bundleID generation:NULL].state == QSSettingsEligibilityEligible;
+    return self.isEnabled && [_eligibility stateForBundleIdentifier:bundleID generation:NULL] == QSSettingsEligibilityEligible;
 }
 
 - (void)reloadPreferences {
@@ -85,7 +134,7 @@ static void QSRequestTrace(QSOpenRequest *request, NSString *routeKind, NSString
 }
 
 - (BOOL)isCurrentRequest:(QSOpenRequest *)request {
-    if (![_eligibility isCurrentDestination:request.destination generation:request.eligibilityGeneration]) return NO;
+    if (![_eligibility isEligibleBundleIdentifier:request.target generation:request.eligibilityGeneration]) return NO;
     @synchronized (self) {
         return _enabled && _pendingRequest == request
             && request.preferenceGeneration == _preferenceGeneration;
@@ -97,17 +146,29 @@ static void QSRequestTrace(QSOpenRequest *request, NSString *routeKind, NSString
 }
 
 - (void)openSettingsForBundleIdentifier:(NSString *)bundleID {
-    if (!QSValidBundleIdentifier(bundleID)) return;
+    if (!QSValidBundleIdentifier(bundleID)) {
+        QSVerboseDiagnostic(@"request-invalid-target", @"Activation target is invalid.");
+        return;
+    }
     QSOpenRequest *request = [QSOpenRequest new];
     request.target = [bundleID copy];
     request.started = NSProcessInfo.processInfo.systemUptime;
     NSUInteger eligibilityGeneration;
-    request.destination = [_eligibility destinationForBundleIdentifier:request.target generation:&eligibilityGeneration];
+    QSSettingsEligibilityState state = [_eligibility stateForBundleIdentifier:request.target
+        generation:&eligibilityGeneration];
     request.eligibilityGeneration = eligibilityGeneration;
     @synchronized (self) {
-        if (!_enabled) return;
-        if (request.destination.state == QSSettingsEligibilityEligible && [_pendingRequest.target isEqualToString:request.target]
-            && _pendingRequest.eligibilityGeneration == request.eligibilityGeneration) return;
+        if (!_enabled) {
+            QSVerboseDiagnostic(@"request-disabled", ([NSString stringWithFormat:
+                @"Cancelled activation for %@ while disabled.", request.target]));
+            return;
+        }
+        if (state == QSSettingsEligibilityEligible && [_pendingRequest.target isEqualToString:request.target]
+            && _pendingRequest.eligibilityGeneration == request.eligibilityGeneration) {
+            QSVerboseDiagnostic(@"request-coalesced", ([NSString stringWithFormat:
+                @"Coalesced pending activation for %@.", request.target]));
+            return;
+        }
         request.identifier = ++_nextRequestID;
         // Capture before validation; no later generation may bless an older read.
         request.preferenceGeneration = _preferenceGeneration;
@@ -123,23 +184,27 @@ static void QSRequestTrace(QSOpenRequest *request, NSString *routeKind, NSString
         #endif
         _pendingRequest = request; // Supersedes an older target, even before its read.
     }
-    if (request.destination.state != QSSettingsEligibilityEligible) {
+    QSRequestTrace(request, @"pending", @"activation", request.started);
+    if (state != QSSettingsEligibilityEligible) {
         // A stale owned tap supersedes older work but never waits for discovery to launch later.
+        QSRequestTrace(request, @"pending", @"cancelled-at-activation (ineligible-or-unknown)",
+            NSProcessInfo.processInfo.systemUptime);
         [self finishRequest:request];
         return;
     }
-    QSRequestTrace(request, @"pending", @"activation", request.started);
     dispatch_async(_workQueue, ^{
         @autoreleasepool {
             if (![self isCurrentRequest:request]) {
-                QSRequestTrace(request, @"pending", @"cancelled-before-validation", NSProcessInfo.processInfo.systemUptime);
+                QSRequestTrace(request, @"pending", @"cancelled-before-validation (disabled-superseded-or-stale)", NSProcessInfo.processInfo.systemUptime);
                 [self finishRequest:request];
                 return;
             }
             QSRequestTrace(request, @"pending", @"worker-start", NSProcessInfo.processInfo.systemUptime);
             BOOL enabled = QSReadEnabled(); // The only committed read per activation.
-            NSString *routeKind = request.destination.evidence & QSSettingsEvidenceBuiltinCatalog ? @"builtin-root" : @"app";
-            NSURL *url = request.destination.URL; // Captured with the eligibility generation at activation.
+            NSString *routeKind = nil;
+            NSURL *url = QSSettingsURL(request.target, &routeKind);
+            QSRequestTrace(request, routeKind, [NSString stringWithFormat:@"route-selected url=%@", url.absoluteString],
+                NSProcessInfo.processInfo.systemUptime);
             BOOL current;
             NSUInteger disabledGeneration = 0;
             @synchronized (self) {
@@ -156,15 +221,16 @@ static void QSRequestTrace(QSOpenRequest *request, NSString *routeKind, NSString
                 }
             }
             if (disabledGeneration) [self->_eligibility setEnabled:NO preferenceGeneration:disabledGeneration];
-            current = current && [self->_eligibility validateDestinationForOpening:request.destination
-                generation:request.eligibilityGeneration] && [self isCurrentRequest:request];
-            QSRequestTrace(request, routeKind, current ? @"validation-complete" : @"validation-cancelled",
+            current = current && [self isCurrentRequest:request];
+            QSRequestTrace(request, routeKind, current ? @"validation-complete" :
+                (enabled ? @"validation-cancelled (superseded-or-stale-generation)" : @"validation-cancelled (disabled)"),
                 NSProcessInfo.processInfo.systemUptime);
             if (!current) {
                 [self finishRequest:request];
                 return;
             }
             if (!url) {
+                QSRequestTrace(request, routeKind, @"cancelled-invalid-route", NSProcessInfo.processInfo.systemUptime);
                 QSDiagnostic(@"route-invalid", @"Could not construct a Settings route for a validated target.");
                 [self finishRequest:request];
                 return;
@@ -173,13 +239,14 @@ static void QSRequestTrace(QSOpenRequest *request, NSString *routeKind, NSString
             dispatch_async(dispatch_get_main_queue(), ^{
                 QSRequestTrace(request, routeKind, @"opener-before", NSProcessInfo.processInfo.systemUptime);
                 if (![self isCurrentRequest:request]) {
-                    QSRequestTrace(request, routeKind, @"cancelled-before-open", NSProcessInfo.processInfo.systemUptime);
+                    QSRequestTrace(request, routeKind, @"cancelled-before-open (disabled-superseded-or-stale)", NSProcessInfo.processInfo.systemUptime);
                     [self finishRequest:request];
                     return;
                 }
                 // Submission is the cancellation boundary; an OS request already
                 // in flight cannot be recalled by a subsequent toggle/selection.
                 NSTimeInterval invoking = NSProcessInfo.processInfo.systemUptime;
+                QSRequestTrace(request, routeKind, @"open-submit", invoking);
                 @try {
                     [UIApplication.sharedApplication openURL:url options:@{} completionHandler:^(BOOL accepted) {
                         QSRequestTrace(request, routeKind,

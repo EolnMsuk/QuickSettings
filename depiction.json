@@ -47,7 +47,7 @@
         },
         {
           "class": "DepictionMarkdownView",
-          "markdown": "## 1.0.3\n\n- Fixed missing **App Settings** shortcuts for built-in apps, including Stocks and Voice Memos.\n- Improved opening the correct app page in Settings.\n- Made the QuickSettings banner easier to read and added space above the enable switch.\n- Removed the repeated banner from the package details page.\n- Added a simple guide to choosing the correct download.\n\n## 1.0.2\n\n- Fixed **App Settings** appearing for apps without an app-specific Settings page.\n- Preserved other Home Screen quick actions and their order.\n- Improved handling of app changes and the enable/disable switch.\n\n## 1.0.1\n\n- Improved Settings opening and responsiveness.\n- Added Settings shortcuts for more built-in apps.\n- Made **App Settings** available on all application icons.\n- Improved handling of repeated taps and app changes.\n\n## 1.0.0\n\n- Initial release of QuickSettings.\n- Added **App Settings** for apps with a Settings page while keeping other quick actions intact.\n- Added a live **Enable QuickSettings** switch.\n- Included light and dark artwork, update checks, support links, and donation options.\n- Added RootHide, rootless, and rootful packages for iOS 15.0 and later.",
+          "markdown": "## 1.0.4\n\n- Restored the 1.0.2 Settings-opening and eligibility flow after the reported 1.0.3 regression.\n- Added a focused **App Settings** fallback for Stocks and Voice Memos on iOS 15-17.\n- Restored the 30-second discovery snapshot: cold or expired discovery may temporarily hide the action, and stale menu selections may cancel.\n\n## 1.0.3\n\n- Fixed missing **App Settings** shortcuts for built-in apps, including Stocks and Voice Memos.\n- Improved opening the correct app page in Settings.\n- Made the QuickSettings banner easier to read and added space above the enable switch.\n- Removed the repeated banner from the package details page.\n- Added a simple guide to choosing the correct download.\n\n## 1.0.2\n\n- Fixed **App Settings** appearing for apps without an app-specific Settings page.\n- Preserved other Home Screen quick actions and their order.\n- Improved handling of app changes and the enable/disable switch.\n\n## 1.0.1\n\n- Improved Settings opening and responsiveness.\n- Added Settings shortcuts for more built-in apps.\n- Made **App Settings** available on all application icons.\n- Improved handling of repeated taps and app changes.\n\n## 1.0.0\n\n- Initial release of QuickSettings.\n- Added **App Settings** for apps with a Settings page while keeping other quick actions intact.\n- Added a live **Enable QuickSettings** switch.\n- Included light and dark artwork, update checks, support links, and donation options.\n- Added RootHide, rootless, and rootful packages for iOS 15.0 and later.",
           "useRawFormat": false
         }
       ]
@@ -59,7 +59,7 @@
         {
           "class": "DepictionTableTextView",
           "title": "Version",
-          "text": "1.0.3"
+          "text": "1.0.4"
         },
         {
           "class": "DepictionTableTextView",
