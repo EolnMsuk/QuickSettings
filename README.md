@@ -5,7 +5,7 @@
   <img src="quicksettingsprefs/Resources/banner-light.png" alt="QuickSettings by EolnMsuk — App settings. One press away." width="100%">
 </picture>
 
-**QuickSettings** by **EolnMsuk** adds **App Settings** to Home Screen application menus. Long-press an app icon to request that app's own Settings page.
+**QuickSettings** by **EolnMsuk** adds **Settings** to Home Screen 3rd party application menus. Long-press a 3rd party app icon to request that app's own Settings page.
 
 ## Install
 
@@ -20,9 +20,9 @@ Download from the [published releases](https://github.com/EolnMsuk/QuickSettings
 ## Enable and use
 
 1. Open **Settings > QuickSettings** and turn on **Enable QuickSettings**.
-2. Long-press a Home Screen app, including an app in the Dock or a folder. No app-page cache warmup is needed.
-3. Select **App Settings** to open that application's page.
+2. Long-press a Home Screen 3rd party app.
+3. Select **Settings** to open that application's page.
 
-Enable and disable changes apply live to newly opened menus; changing this switch requires no respring. An already visible action checks the committed preference on a worker before opening. Preference changes and newer selections invalidate pending work; an open already submitted to iOS cannot be recalled. Identical pending requests are coalesced.
+## Support Developer
 
-**App Settings** can appear even when an app has no dedicated Settings page. QuickSettings checks real application icons without scanning the installed app list. Folder, bookmark, and widget icons are excluded, and existing quick actions retain their order.
+[Venmo](https://venmo.com/u/EolnMsuk) | Bitcoin: `31uHLpioo1TbxAmo9kM7rrKcLz3wvcoZaL`
