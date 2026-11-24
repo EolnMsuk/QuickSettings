@@ -7,9 +7,11 @@
   <img src="quicksettingsprefs/Resources/banner-light.png" alt="QuickSettings by EolnMsuk — App settings. One press away." width="65%">
 </picture>
 
-## Install
+## Installation
 
-Download and install the deb from [latest releases](https://github.com/EolnMsuk/QuickSettings/releases).
+1. Navigate to the [Releases page](https://github.com/EolnMsuk/QuickSettings/releases).
+2. Download the correct `.deb` for your environment (see table). 
+3. Install it via **Sileo** or **Zebra**.
 
 | Download | Environment | Debian architecture |
 | --- | --- | --- |
