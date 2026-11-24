@@ -19,7 +19,7 @@ Download from the [published releases](https://github.com/EolnMsuk/QuickSettings
 
 ## Enable and use
 
-1. Open **Settings > QuickSettings** and turn on **Enable QuickSettings**. The initial value is **off**.
+1. Open **Settings > QuickSettings** and turn on **Enable QuickSettings**.
 2. Long-press a Home Screen app, including an app in the Dock or a folder. No app-page cache warmup is needed.
 3. Select **App Settings** to open that application's page.
 
