@@ -1,6 +1,6 @@
 # QuickSettings project overview
 
-QuickSettings by EolnMsuk adds **App Settings** to Home Screen app menus using an index of real Settings rows, while preserving other quick actions, the live enable switch, update checks, support links, and donation options. The local 1.0.5 candidate uses guarded native row selection and requires a matching visible-controller acknowledgement. Its iOS 16 adapter, unresolved app associations, cross-process transport, and discovery while Settings is suspended or terminated still need device verification; missing index entries are coverage gaps.
+QuickSettings by EolnMsuk adds **Settings** to supported non-Apple Home Screen app menus so you can open an app's page in Settings with a long press. Apple apps are excluded; non-Apple apps retain the existing Settings-page discovery and eligibility behavior, including sideloaded and TestFlight apps. It hides the action when no app-specific page is confirmed, preserves other quick actions, and includes a live enable switch, update checks, support links, and donation options.
 
 Targets **iOS 15.0+** with separate **RootHide**, **rootless**, and **rootful** packages.
 
@@ -9,22 +9,18 @@ QuickSettings/
 |-- .gitignore                            # Local files excluded from Git
 |-- Makefile                              # Main build and package configuration
 |-- control                               # Package information and version
-|-- QuickSettings.plist                   # Exact SpringBoard and Settings injection filter
+|-- QuickSettings.plist                   # SpringBoard injection filter
 |-- Tweak.x                               # Home Screen menu hooks
-|-- QSSettingsBridge.x                    # Settings-only native inventory, selection, lifecycle, and acknowledgement
-|-- QSSettingsNativeInterfaces.h          # Narrow ABI-guarded Settings adapter declarations
-|-- QSSettingsIPC.h                       # Bounded two-process protocol and navigation build marker
-|-- QSSettingsIPC.m                       # Immutable schema validation, synchronized key-level transport, and request identities
 |-- QSConstants.h                         # Shared identifiers and defaults
 |-- QSPrivateInterfaces.h                 # Guarded private API declarations
 |-- QSPreferences.h                       # Preference interface
 |-- QSPreferences.m                       # Preference storage and updates
 |-- QSPaneResolver.h                      # Settings opening interface
-|-- QSPaneResolver.m                      # Expiring requests, cancellation, BOOL bundle-ID launch, and acknowledgement handling
-|-- QSSettingsEligibility.h               # Memory-only native-index facade and record checks
-|-- QSSettingsEligibility.m               # SpringBoard index cache and proven app-availability invalidation
+|-- QSPaneResolver.m                      # Eligibility-checked non-Apple routing, cancellation, and asynchronous opening
+|-- QSSettingsEligibility.h               # Eligibility states, Apple exclusion, and generation checks
+|-- QSSettingsEligibility.m               # Shared Settings-page discovery, Apple exclusion, and snapshot cache
 |-- QSSettingsSupport.h                   # Shared helpers and opt-in diagnostic flag
-|-- QSSettingsSupport.m                   # Bundle-ID validation, bounded request diagnostics, and guarded failure feedback
+|-- QSSettingsSupport.m                   # Bundle-ID validation and bounded diagnostics
 |-- quicksettingsprefs/
 |   |-- Makefile                          # Preference bundle build configuration
 |   |-- QSRootListController.h            # Preference controller interface

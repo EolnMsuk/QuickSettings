@@ -3,7 +3,6 @@
 #import "QSPrivateInterfaces.h"
 #import "QSPaneResolver.h"
 #import "QSSettingsSupport.h"
-#import "QSSettingsIPC.h"
 
 static BOOL QSIsOurItem(id item) {
     return QSCanCall(item, @selector(type), "@", "")
@@ -63,8 +62,7 @@ static BOOL QSShortcutClassReady(Class cls) {
     [items removeObjectsAtIndexes:duplicates];
     if (!QSPaneResolver.sharedResolver.isEnabled) return duplicates.count ? [items copy] : original;
     NSString *bundleID = QSBundleIDForIcon(self);
-    NSDictionary *record = bundleID ? [QSPaneResolver.sharedResolver recordForBundleIdentifier:bundleID] : nil;
-    if (!record) {
+    if (!bundleID || ![QSPaneResolver.sharedResolver hasSettingsForBundleIdentifier:bundleID]) {
         return duplicates.count ? [items copy] : original;
     }
     Class itemClass = NSClassFromString(@"SBSApplicationShortcutItem");
@@ -75,9 +73,9 @@ static BOOL QSShortcutClassReady(Class cls) {
     id<QSShortcutItem> item = [[itemClass alloc] init];
     if (!item) return duplicates.count ? [items copy] : original;
     item.type = QSShortcutType;
-    item.localizedTitle = @"App Settings";
+    item.localizedTitle = @"Settings";
     item.bundleIdentifierToLaunch = QSSettingsBundleID;
-    item.userInfo = @{QSTargetBundleKey: bundleID, QSTargetRevisionKey: record[@"revision"]};
+    item.userInfo = @{QSTargetBundleKey: bundleID};
     Class iconClass = NSClassFromString(@"SBSApplicationShortcutSystemIcon");
     if (QSCanCall(item, @selector(setIcon:), "v", "@")
         && QSMethodSignature(class_getInstanceMethod(iconClass, @selector(initWithSystemImageName:)), "@", "@")) {
@@ -93,13 +91,12 @@ static BOOL QSShortcutClassReady(Class cls) {
     if (!QSPaneResolver.sharedResolver.isEnabled) return;
     id payload = QSCanCall(item, @selector(userInfo), "@", "") ? [(id<QSShortcutItem>)item userInfo] : nil;
     id target = [payload isKindOfClass:NSDictionary.class] ? payload[QSTargetBundleKey] : nil;
-    id revision = [payload isKindOfClass:NSDictionary.class] ? payload[QSTargetRevisionKey] : nil;
-    if (!QSValidBundleIdentifier(target) || !QSIPCValidUUID(revision)) {
+    if (!QSValidBundleIdentifier(target)) {
         QSDiagnostic(@"shortcut-target", @"QuickSettings action has no valid namespaced target.");
         return;
     }
     // bundleID can now be com.apple.Preferences. Only userInfo retains the target.
-    [QSPaneResolver.sharedResolver openSettingsForBundleIdentifier:target recordRevision:revision];
+    [QSPaneResolver.sharedResolver openSettingsForBundleIdentifier:target];
 }
 %end
 %end
@@ -111,8 +108,6 @@ static void QSReloadPreferences(CFNotificationCenterRef center, void *observer,
 
 %ctor {
     @autoreleasepool {
-        if (![NSBundle.mainBundle.bundleIdentifier isEqual:@"com.apple.springboard"]) return;
-        NSLog(@"[QuickSettings] SpringBoard startup marker=%@ adapter=%@ osBuild=%@ (%@).", QSNavigationMarker, QSNativeAdapter, QSOSBuild(), QSInstalledEnvironment());
         Class cls = NSClassFromString(@"SBIconView");
         BOOL compatible = QSMethodSignature(class_getInstanceMethod(cls, @selector(applicationShortcutItems)), "@", "")
             && QSMethodSignature(class_getClassMethod(cls, @selector(activateShortcut:withBundleIdentifier:forIconView:)), "v", "@@@");
@@ -123,7 +118,7 @@ static void QSReloadPreferences(CFNotificationCenterRef center, void *observer,
         %init(QSHomeScreen);
         CFNotificationCenterAddObserver(CFNotificationCenterGetDarwinNotifyCenter(), NULL,
             QSReloadPreferences, QS_RELOAD_NOTIFICATION, NULL, CFNotificationSuspensionBehaviorDeliverImmediately);
-        QSVerboseDiagnostic(@"hook-activation", @"Installed process-specific SpringBoard hooks.");
+        NSLog(@"[QuickSettings] Installed dormant hooks (%@).", QSInstalledEnvironment());
         // The callback only queues a committed read; no CFPreferences IPC here.
         QSReloadPreferences(NULL, NULL, NULL, NULL, NULL);
     }
