@@ -24,5 +24,6 @@ SUBPROJECTS += quicksettingsprefs
 include $(THEOS_MAKE_PATH)/aggregate.mk
 
 # Ship the applicable notices with the installed preference bundle.
+# Theos applies the package install prefix during packaging, after staging.
 after-stage::
-	cp "$(THEOS_PROJECT_DIR)/LICENSE" "$(THEOS_STAGING_DIR)$(THEOS_PACKAGE_INSTALL_PREFIX)/Library/PreferenceBundles/quicksettingsprefs.bundle/QuickSettings-LICENSE.txt"
+	cp "$(THEOS_PROJECT_DIR)/LICENSE" "$(THEOS_STAGING_DIR)/Library/PreferenceBundles/quicksettingsprefs.bundle/QuickSettings-LICENSE.txt"
