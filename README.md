@@ -11,9 +11,9 @@
 
 | Download | Environment | Debian architecture |
 | --- | --- | --- |
-| `com.eolnmsuk.QuickSettings_1.0.1_roothide.deb` | RootHide | `iphoneos-arm64e` |
-| `com.eolnmsuk.QuickSettings_1.0.1_rootless.deb` | rootless | `iphoneos-arm64` |
-| `com.eolnmsuk.QuickSettings_1.0.1_rootful.deb` | rootful | `iphoneos-arm` |
+| `com.eolnmsuk.QuickSettings_roothide.deb` | RootHide | `iphoneos-arm64e` |
+| `com.eolnmsuk.QuickSettings_rootless.deb` | rootless | `iphoneos-arm64` |
+| `com.eolnmsuk.QuickSettings_rootful.deb` | rootful | `iphoneos-arm` |
 
 Download from the [published releases](https://github.com/EolnMsuk/QuickSettings/releases). Open the matching `.deb` in your jailbreak package manager, such as Sileo, and follow its installation instructions. Let the package manager perform any initial process reload it requires to load a newly installed tweak.
 
