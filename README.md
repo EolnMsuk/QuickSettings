@@ -5,7 +5,7 @@
   <img src="quicksettingsprefs/Resources/banner-light.png" alt="QuickSettings by EolnMsuk — App settings. One press away." width="100%">
 </picture>
 
-**QuickSettings** by **EolnMsuk** adds **Settings** to Home Screen 3rd party application menus. Long-press a 3rd party app icon to request that app's own Settings page.
+**QuickSettings** adds **Settings** to Home Screen 3rd party application long-press context menus.
 
 ## Install
 
