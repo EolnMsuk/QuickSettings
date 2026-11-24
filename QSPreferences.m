@@ -3,14 +3,19 @@
 #import "QSConstants.h"
 
 BOOL QSReadEnabled(void) {
-    CFPreferencesAppSynchronize(QS_PREFS_DOMAIN);
-    CFPropertyListRef value = CFPreferencesCopyAppValue(QS_ENABLED_KEY, QS_PREFS_DOMAIN);
     BOOL enabled = QSDefaultEnabled;
-    if (value && CFGetTypeID(value) == CFBooleanGetTypeID()) {
-        enabled = CFBooleanGetValue((CFBooleanRef)value);
-    }
-    if (value) CFRelease(value);
+    QSReadEnabledWithStatus(&enabled);
     return enabled;
+}
+
+BOOL QSReadEnabledWithStatus(BOOL *enabled) {
+    if (enabled) *enabled = QSDefaultEnabled;
+    if (!CFPreferencesAppSynchronize(QS_PREFS_DOMAIN)) return NO;
+    CFPropertyListRef value = CFPreferencesCopyAppValue(QS_ENABLED_KEY, QS_PREFS_DOMAIN);
+    BOOL valid = !value || CFGetTypeID(value) == CFBooleanGetTypeID();
+    if (value && valid && enabled) *enabled = CFBooleanGetValue((CFBooleanRef)value);
+    if (value) CFRelease(value);
+    return valid;
 }
 
 BOOL QSWriteEnabled(BOOL enabled) {

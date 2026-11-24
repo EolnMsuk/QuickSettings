@@ -7,6 +7,7 @@
 #define QS_RELOAD_NOTIFICATION CFSTR("com.eolnmsuk.quicksettings/ReloadPrefs")
 static NSString *const QSShortcutType = @"com.eolnmsuk.quicksettings.open-settings";
 static NSString *const QSTargetBundleKey = @"com.eolnmsuk.quicksettings.target-bundle-id";
+static NSString *const QSTargetRevisionKey = @"com.eolnmsuk.quicksettings.target-record-revision";
 static NSString *const QSSettingsBundleID = @"com.apple.Preferences";
 static const BOOL QSDefaultEnabled = NO;
 

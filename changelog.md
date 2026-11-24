@@ -1,5 +1,14 @@
 # QuickSettings Changelog
 
+## 1.0.5
+
+- Added an experimental way to find and open app pages using Settings' own app list. This navigation method currently requires iOS 16.
+- Refreshes available shortcuts when QuickSettings is enabled, Settings is reopened, or its app list changes.
+- Removed the 30-second limit that could make shortcuts disappear.
+- Improved handling of repeated taps, choosing another app, turning QuickSettings off, and attempts that time out.
+- Added clearer failure messages and optional diagnostics for missing shortcuts or pages that do not open.
+- This update still needs device testing, especially for built-in apps. Some shortcuts may remain unavailable, and new or changed apps may need Settings reopened before their shortcuts update.
+
 ## 1.0.4
 
 - Restored the 1.0.2 Settings-opening and eligibility flow after the reported 1.0.3 regression.

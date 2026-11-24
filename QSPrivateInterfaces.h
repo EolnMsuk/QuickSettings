@@ -33,18 +33,8 @@
 - (id)initWithSystemImageName:(NSString *)name;
 @end
 
-// Non-UI model calls. SpringBoard access and background-thread affinity still
-// need device verification; every call remains guarded by its runtime signature.
-@protocol QSSystemPolicy <NSObject>
-+ (id)thirdPartyApplications;
-+ (id)specifiersForThirdPartyApps:(id)applications;
-@end
 @protocol QSNativeApp <NSObject>
 - (id)proxy;
-@end
-@protocol QSNativeSpecifier <NSObject>
-- (id)identifier;
-- (NSInteger)cellType;
 @end
 @protocol QSAppProxy <NSObject>
 + (id)applicationProxyForIdentifier:(NSString *)identifier;
@@ -52,14 +42,12 @@
 - (BOOL)isInstalled;
 - (BOOL)isPlaceholder;
 - (BOOL)isRestricted;
+- (id)bundleURL;
 @end
 @protocol QSWorkspace <NSObject>
 + (id)defaultWorkspace;
 - (void)addObserver:(id)observer;
-@end
-
-@protocol QSDetailProvider <NSObject>
-+ (id)preferencesURL;
+- (BOOL)openApplicationWithBundleID:(id)bundleID;
 @end
 
 // expectedReturn is a set of accepted encodings; args describes explicit args.

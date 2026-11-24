@@ -9,6 +9,9 @@
 
 FOUNDATION_EXPORT void QSDiagnostic(NSString *code, NSString *detail);
 FOUNDATION_EXPORT BOOL QSValidBundleIdentifier(id value);
+FOUNDATION_EXPORT void QSNavigationTrace(NSDictionary *request, NSString *stage, NSString *reason);
+// Main queue, foreground scene only; never dismisses another presentation.
+FOUNDATION_EXPORT void QSNavigationFailureFeedback(void);
 
 #if QS_VERBOSE_DIAGNOSTICS
 #define QSVerboseDiagnostic(code, detail) QSDiagnostic((code), (detail))
