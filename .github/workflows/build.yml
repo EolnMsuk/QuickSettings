@@ -68,7 +68,7 @@ jobs:
         with:
           theos-src: https://github.com/theos/theos
           theos-sdks: https://github.com/theos/sdks
-      - name: Select native toolchain and SDK
+      - name: Select toolchain and SDK
         run: |
           stock_theos="${THEOS:?The bootstrap did not export THEOS}"
           active_theos="$stock_theos"
@@ -78,7 +78,7 @@ jobs:
             git -C "$active_theos" checkout --detach 958fea4f779943505b15b93c88bb4db8d97b346d
             git -C "$active_theos" submodule update --init --recursive
             [[ -f "$active_theos/vendor/mod/roothide/package/deb.mk" ]] || {
-              echo "The native RootHide scheme is missing." >&2; exit 1;
+              echo "The RootHide scheme is missing." >&2; exit 1;
             }
           fi
           sdk_name="iPhoneOS${SDK_VERSION}.sdk"
@@ -227,11 +227,7 @@ jobs:
             if (assets.some(a => !names.includes(a.name))) {
               throw new Error('Existing draft has unexpected assets; review it manually before rerunning.');
             }
-            const tick = String.fromCharCode(96);
-            const table = names.map((n, i) => '| ' + tick + n + tick + ' | ' +
-              (i === 0 ? 'Native RootHide' : variants[i]) + ' |').join('\n');
-            const body = notes + '\n\n| Package | Environment |\n| --- | --- |\n' + table +
-              '\n\nTargets iOS 15.0+. Review and test the matching package before publishing.\n';
+            const body = notes + '\n\nPackages: RootHide, rootless, and rootful.\n\nRequires iOS 15.0+.\n';
             const fields = {owner, repo, tag_name: tag, target_commitish: sha,
               name: 'QuickSettings v' + version, body, draft: true, prerelease: false};
             // Every guard above runs before the first release mutation.
