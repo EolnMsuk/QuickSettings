@@ -1,5 +1,13 @@
 # QuickSettings Changelog
 
+## 1.0.3
+
+- Fixed missing **App Settings** shortcuts for built-in apps, including Stocks and Voice Memos.
+- Improved opening the correct app page in Settings.
+- Made the QuickSettings banner easier to read and added space above the enable switch.
+- Removed the repeated banner from the package details page.
+- Added a simple guide to choosing the correct download.
+
 ## 1.0.2
 
 - Fixed **App Settings** appearing for apps without an app-specific Settings page.

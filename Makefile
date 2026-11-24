@@ -15,8 +15,10 @@ endif
 include $(THEOS)/makefiles/common.mk
 
 TWEAK_NAME = QuickSettings
-QuickSettings_FILES = Tweak.x QSPreferences.m QSPaneResolver.m QSSettingsEligibility.m
-QuickSettings_CFLAGS = -fobjc-arc -DQS_BUILD_ENVIRONMENT=$(QS_ENVIRONMENT)
+QuickSettings_FILES = Tweak.x QSPreferences.m QSPaneResolver.m QSSettingsEligibility.m QSSettingsSupport.m
+# Explicit opt-in for request timings and routine discovery logs.
+QS_VERBOSE_DIAGNOSTICS ?= 0
+QuickSettings_CFLAGS = -fobjc-arc -DQS_BUILD_ENVIRONMENT=$(QS_ENVIRONMENT) -DQS_VERBOSE_DIAGNOSTICS=$(QS_VERBOSE_DIAGNOSTICS)
 QuickSettings_FRAMEWORKS = Foundation UIKit
 
 include $(THEOS_MAKE_PATH)/tweak.mk

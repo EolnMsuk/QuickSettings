@@ -9,19 +9,8 @@
       "class": "DepictionStackView",
       "views": [
         {
-          "class": "DepictionImageView",
-          "URL": "https://raw.githubusercontent.com/EolnMsuk/QuickSettings/main/quicksettingsprefs/Resources/banner-sileo-dark.png",
-          "width": 1600,
-          "height": 600,
-          "cornerRadius": 0
-        },
-        {
-          "class": "DepictionSpacerView",
-          "spacing": 16
-        },
-        {
           "class": "DepictionMarkdownView",
-          "markdown": "**QuickSettings** by **EolnMsuk** adds **App Settings** to supported Home Screen app menus. Long-press an app icon to open its page in Settings.\n\nVersion **1.0.2** hides the action for apps without an app-specific Settings page and keeps your other quick actions in their original order.\n\nTurn it on in **Settings > QuickSettings**. The switch applies immediately, and the preference pane includes light and dark artwork, manual update checks, support links, and donation options.\n\nTargets **iOS 15.0+** with separate **RootHide**, **rootless**, and **rootful** packages.",
+          "markdown": "**QuickSettings** by **EolnMsuk** adds **App Settings** to supported Home Screen app menus. Long-press an app that has a page in Settings and choose **App Settings** to open it. Your other quick actions stay in their original order.\n\nTurn it on in **Settings > QuickSettings**. The switch applies immediately, and the preference pane includes light and dark artwork, manual update checks, support links, and donation options.\n\nTargets **iOS 15.0+** with separate **RootHide**, **rootless**, and **rootful** packages.",
           "useRawFormat": false
         },
         {
@@ -58,7 +47,7 @@
         },
         {
           "class": "DepictionMarkdownView",
-          "markdown": "## 1.0.2\n\n- Fixed **App Settings** appearing for apps without an app-specific Settings page.\n- Preserved other Home Screen quick actions and their order.\n- Improved handling of app changes and the enable/disable switch.\n\n## 1.0.1\n\n- Improved Settings opening and responsiveness.\n- Added Settings shortcuts for more built-in apps.\n- Made **App Settings** available on all application icons.\n- Improved handling of repeated taps and app changes.\n\n## 1.0.0\n\n- Initial release of QuickSettings.\n- Added **App Settings** for apps with a Settings page while keeping other quick actions intact.\n- Added a live **Enable QuickSettings** switch.\n- Included light and dark artwork, update checks, support links, and donation options.\n- Added RootHide, rootless, and rootful packages for iOS 15.0 and later.",
+          "markdown": "## 1.0.3\n\n- Fixed missing **App Settings** shortcuts for built-in apps, including Stocks and Voice Memos.\n- Improved opening the correct app page in Settings.\n- Made the QuickSettings banner easier to read and added space above the enable switch.\n- Removed the repeated banner from the package details page.\n- Added a simple guide to choosing the correct download.\n\n## 1.0.2\n\n- Fixed **App Settings** appearing for apps without an app-specific Settings page.\n- Preserved other Home Screen quick actions and their order.\n- Improved handling of app changes and the enable/disable switch.\n\n## 1.0.1\n\n- Improved Settings opening and responsiveness.\n- Added Settings shortcuts for more built-in apps.\n- Made **App Settings** available on all application icons.\n- Improved handling of repeated taps and app changes.\n\n## 1.0.0\n\n- Initial release of QuickSettings.\n- Added **App Settings** for apps with a Settings page while keeping other quick actions intact.\n- Added a live **Enable QuickSettings** switch.\n- Included light and dark artwork, update checks, support links, and donation options.\n- Added RootHide, rootless, and rootful packages for iOS 15.0 and later.",
           "useRawFormat": false
         }
       ]
@@ -70,7 +59,7 @@
         {
           "class": "DepictionTableTextView",
           "title": "Version",
-          "text": "1.0.2"
+          "text": "1.0.3"
         },
         {
           "class": "DepictionTableTextView",

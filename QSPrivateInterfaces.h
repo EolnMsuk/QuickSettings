@@ -33,32 +33,38 @@
 - (id)initWithSystemImageName:(NSString *)name;
 @end
 
-// Recovered pre-1.0.1 declarations; provenance and runtime limits: plan.md.
-// These are non-controller model calls. Thread affinity is not device-verified.
+// Non-UI declarations inspected in iOS 15/16.5/17/18.2 headers, for example:
+// https://raw.githubusercontent.com/donato-fiore/iOS-Runtime-Headers/031ec3a8b25d1751646143551d2ea630bbb04cf9/16.5/PrivateFrameworks/Preferences.framework/Headers/PSSystemPolicyManager.h
+// The aggregate predicate's use for arbitrary apps is an engineering inference;
+// signatures do not verify SpringBoard access or background-thread affinity.
 @protocol QSSystemPolicy <NSObject>
 + (id)thirdPartyApplications;
 + (id)specifiersForThirdPartyApps:(id)applications;
++ (id)thirdPartyApplicationForBundleID:(NSString *)bundleID;
++ (BOOL)_systemSettingsNeededForProxy:(id)proxy;
 @end
 @protocol QSNativeApp <NSObject>
 - (id)proxy;
 @end
 @protocol QSNativeSpecifier <NSObject>
 - (id)identifier;
-- (long long)cellType;
+- (NSInteger)cellType;
 @end
 @protocol QSAppProxy <NSObject>
+// https://raw.githubusercontent.com/donato-fiore/iOS-Runtime-Headers/031ec3a8b25d1751646143551d2ea630bbb04cf9/16.5/Frameworks/CoreServices.framework/Headers/LSApplicationProxy.h
+// bundleURL is inherited from LSBundleProxy; app resources follow this URL.
 + (id)applicationProxyForIdentifier:(NSString *)identifier;
 - (id)applicationIdentifier;
 - (BOOL)isInstalled;
 - (BOOL)isPlaceholder;
 - (BOOL)isRestricted;
+- (BOOL)hasSettingsBundle;
+- (id)bundleURL;
 @end
 @protocol QSWorkspace <NSObject>
 + (id)defaultWorkspace;
 - (void)addObserver:(id)observer;
-@end
-@protocol QSDetailProvider <NSObject>
-+ (id)preferencesURL;
+- (id)allInstalledApplications;
 @end
 
 // expectedReturn is a set of accepted encodings; args describes explicit args.

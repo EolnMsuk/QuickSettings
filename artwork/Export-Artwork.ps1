@@ -1,6 +1,8 @@
 # Original QuickSettings artwork, EolnMsuk, 2026. See ../LICENSE.
 # Local vector paths and typography exported through Windows System.Drawing.
 # Run from any directory with PowerShell on Windows; no network or extra modules.
+param([switch]$SettingsBannersOnly)
+
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
 Add-Type -AssemblyName System.Drawing
@@ -63,22 +65,26 @@ function SaveCanvas($canvas,[string]$name) {
     $canvas[0].Dispose()
 }
 
-$icon = NewCanvas 1024 1024
-DrawMark $icon[1] 0 0 1024
-# Downsample from the same full-resolution mark for all Settings scales.
-foreach ($entry in @(@('icon.png',29),@('icon@2x.png',58),@('icon@3x.png',87))) {
-    $small = NewCanvas $entry[1] $entry[1]
-    $small[1].DrawImage($icon[0],[Drawing.Rectangle]::new(0,0,$entry[1],$entry[1]),0,0,1024,1024,[Drawing.GraphicsUnit]::Pixel)
-    SaveCanvas $small $entry[0]
+if (-not $SettingsBannersOnly) {
+    $icon = NewCanvas 1024 1024
+    DrawMark $icon[1] 0 0 1024
+    # Downsample from the same full-resolution mark for all Settings scales.
+    foreach ($entry in @(@('icon.png',29),@('icon@2x.png',58),@('icon@3x.png',87))) {
+        $small = NewCanvas $entry[1] $entry[1]
+        $small[1].DrawImage($icon[0],[Drawing.Rectangle]::new(0,0,$entry[1],$entry[1]),0,0,1024,1024,[Drawing.GraphicsUnit]::Pixel)
+        SaveCanvas $small $entry[0]
+    }
+    SaveCanvas $icon 'package-icon.png'
 }
-SaveCanvas $icon 'package-icon.png'
 
-foreach ($style in @('dark','light','sileo-dark')) {
+$styles = if ($SettingsBannersOnly) { @('dark','light') } else { @('dark','light','sileo-dark') }
+foreach ($style in $styles) {
     $canvas = NewCanvas 1600 600
     $g = $canvas[1]
     $light = $style -eq 'light'
-    $scale = if ($style -eq 'sileo-dark') { 0.86 } else { 1.0 }
-    $centerY = if ($style -eq 'sileo-dark') { 330 } else { 300 }
+    $sileo = $style -eq 'sileo-dark'
+    $scale = if ($sileo) { 0.86 } else { 1.0 }
+    $centerY = if ($sileo) { 330 } else { 300 }
     $background = [Drawing.Drawing2D.LinearGradientBrush]::new(
         [Drawing.Rectangle]::new(0,0,1600,600),(Color $(if ($light) {'#F5FAFF'} else {'#0C1728'})),
         (Color $(if ($light) {'#E4F5F5'} else {'#122D42'})),[single]18)
@@ -87,24 +93,42 @@ foreach ($style in @('dark','light','sileo-dark')) {
     foreach ($diameter in @(520,760,1000)) {
         $g.DrawEllipse($accent,[single](1510-$diameter/2),[single](30-$diameter/2),[single]$diameter,[single]$diameter)
     }
-    $titleFont = [Drawing.Font]::new('Segoe UI',[single](112*$scale),[Drawing.FontStyle]::Bold,[Drawing.GraphicsUnit]::Pixel)
-    $subtitleFont = [Drawing.Font]::new('Segoe UI',[single](34*$scale),[Drawing.FontStyle]::Regular,[Drawing.GraphicsUnit]::Pixel)
-    $authorFont = [Drawing.Font]::new('Segoe UI',[single](30*$scale),[Drawing.FontStyle]::Regular,[Drawing.GraphicsUnit]::Pixel)
+    $titleFont = [Drawing.Font]::new('Segoe UI',[single]$(if ($sileo) {112*$scale} else {140}),[Drawing.FontStyle]::Bold,[Drawing.GraphicsUnit]::Pixel)
+    $subtitleFont = [Drawing.Font]::new('Segoe UI',[single]$(if ($sileo) {34*$scale} else {72}),[Drawing.FontStyle]::Regular,[Drawing.GraphicsUnit]::Pixel)
+    $authorFont = [Drawing.Font]::new('Segoe UI',[single]$(if ($sileo) {30*$scale} else {70}),[Drawing.FontStyle]::Regular,[Drawing.GraphicsUnit]::Pixel)
     $titleSize = $g.MeasureString('QuickSettings',$titleFont)
-    $markSize = [single](300*$scale)
-    $gap = [single](65*$scale)
-    $groupWidth = $markSize+$gap+$titleSize.Width
+    $subtitleSize = $g.MeasureString('App settings. One press away.',$subtitleFont)
+    $authorSize = $g.MeasureString('by EolnMsuk',$authorFont)
+    $markSize = [single]$(if ($sileo) {300*$scale} else {400})
+    $gap = [single]$(if ($sileo) {65*$scale} else {48})
+    $textWidth = if ($sileo) { $titleSize.Width } else {
+        [Math]::Max($titleSize.Width,[Math]::Max($subtitleSize.Width,$authorSize.Width))
+    }
+    $groupWidth = $markSize+$gap+$textWidth
     $left = [single]((1600-$groupWidth)/2)
     DrawMark $g $left ([single]($centerY-$markSize/2)) $markSize
     $textX = [single]($left+$markSize+$gap)
-    $textTop = [single]($centerY-137*$scale)
+    if ($sileo) {
+        # Preserve the separate package-manager composition.
+        $textTop = [single]($centerY-137*$scale)
+        $subtitleTop = [single]($textTop+155*$scale)
+        $authorTop = [single]($textTop+216*$scale)
+    } else {
+        $lineGap = 10
+        $textHeight = $titleSize.Height+$subtitleSize.Height+$authorSize.Height+2*$lineGap
+        if ($groupWidth -gt 1600 -or $textHeight -gt 600) { throw 'Settings banner content exceeds the canvas.' }
+        $textTop = [single]((600-$textHeight)/2)
+        $subtitleTop = [single]($textTop+$titleSize.Height+$lineGap)
+        $authorTop = [single]($subtitleTop+$subtitleSize.Height+$lineGap)
+    }
     $titleBrush = [Drawing.SolidBrush]::new((Color $(if ($light) {'#14334B'} else {'#F5FCFF'})))
     $subtitleBrush = [Drawing.SolidBrush]::new((Color $(if ($light) {'#365D73'} else {'#B4D1E1'})))
     $authorBrush = [Drawing.SolidBrush]::new((Color $(if ($light) {'#436B7A'} else {'#81B6C7'})))
     $g.DrawString('QuickSettings',$titleFont,$titleBrush,$textX,$textTop)
-    $g.DrawString('App settings. One press away.',$subtitleFont,$subtitleBrush,$textX,([single]($textTop+155*$scale)))
-    $g.DrawString('by EolnMsuk',$authorFont,$authorBrush,$textX,([single]($textTop+216*$scale)))
+    $g.DrawString('App settings. One press away.',$subtitleFont,$subtitleBrush,$textX,$subtitleTop)
+    $g.DrawString('by EolnMsuk',$authorFont,$authorBrush,$textX,$authorTop)
     foreach ($item in @($titleFont,$subtitleFont,$authorFont,$titleBrush,$subtitleBrush,$authorBrush,$accent,$background)) { $item.Dispose() }
     SaveCanvas $canvas "banner-$style.png"
 }
-Write-Output "Exported original icons and 1600 x 600 banners to $assetDirectory"
+if ($SettingsBannersOnly) { Write-Output "Exported only light/dark 1600 x 600 Settings banners to $assetDirectory" }
+else { Write-Output "Exported original icons and 1600 x 600 banners to $assetDirectory" }

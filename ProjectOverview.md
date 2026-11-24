@@ -16,13 +16,15 @@ QuickSettings/
 |-- QSPreferences.h                       # Preference interface
 |-- QSPreferences.m                       # Preference storage and updates
 |-- QSPaneResolver.h                      # Settings opening interface
-|-- QSPaneResolver.m                      # Settings routes and asynchronous opening
-|-- QSSettingsEligibility.h               # Settings availability interface
-|-- QSSettingsEligibility.m               # Native Settings lookup and cache
+|-- QSPaneResolver.m                      # Captured destinations, cancellation, and asynchronous opening
+|-- QSSettingsEligibility.h               # Immutable Settings destination and evidence interface
+|-- QSSettingsEligibility.m               # Native/custom discovery, app-root catalog, manifests, and cache
+|-- QSSettingsSupport.h                   # Shared helpers and opt-in diagnostic flag
+|-- QSSettingsSupport.m                   # Bundle-ID validation and bounded diagnostics
 |-- quicksettingsprefs/
 |   |-- Makefile                          # Preference bundle build configuration
 |   |-- QSRootListController.h            # Preference controller interface
-|   |-- QSRootListController.m            # Settings pane, toggle, and footer
+|   |-- QSRootListController.m            # Settings pane, banner spacing, toggle, and footer
 |   |-- QSUpdateChecker.h                 # Update checker interface
 |   |-- QSUpdateChecker.m                 # Release checks and version comparison
 |   |-- QSDonationController.h            # Donation menu interface
@@ -47,7 +49,7 @@ QuickSettings/
 |   |-- Library/PreferenceLoader/Preferences/
 |       |-- QuickSettings.plist           # Settings pane registration
 |-- artwork/
-|   |-- Export-Artwork.ps1                # Artwork export script
+|   |-- Export-Artwork.ps1                # Deterministic artwork export; optional Settings-only banners
 |-- scripts/
 |   |-- sync-metadata.py                  # Release metadata synchronization
 |-- .github/

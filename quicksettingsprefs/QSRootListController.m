@@ -31,11 +31,14 @@
 
 @interface QSRootListController ()
 @property (nonatomic, strong) UIImageView *bannerView;
+@property (nonatomic, strong) UIView *bannerHeaderView;
 @property (nonatomic, strong) UILabel *footerLabel;
 @property (nonatomic) BOOL updateCheckInProgress;
 @property (nonatomic) BOOL showUpdateResult;
 @property (nonatomic) BOOL preferenceWriteInProgress;
 @end
+
+static const CGFloat QSBannerBottomSpacing = 18.0;
 
 static NSBundle *QSPrefsBundle(void) {
     return [NSBundle bundleForClass:QSRootListController.class];
@@ -99,7 +102,10 @@ static UIImage *QSRowSymbol(NSString *name, UIColor *color, UITraitCollection *t
     self.bannerView = [UIImageView new];
     self.bannerView.contentMode = UIViewContentModeScaleAspectFit;
     self.bannerView.isAccessibilityElement = YES;
-    self.bannerView.accessibilityLabel = @"QuickSettings by EolnMsuk";
+    self.bannerView.accessibilityLabel = @"QuickSettings. App settings. One press away. by EolnMsuk.";
+    self.bannerHeaderView = [UIView new];
+    self.bannerHeaderView.backgroundColor = UIColor.clearColor;
+    [self.bannerHeaderView addSubview:self.bannerView];
     [self updateBanner];
 
     self.footerLabel = [UILabel new];
@@ -118,7 +124,9 @@ static UIImage *QSRowSymbol(NSString *name, UIColor *color, UITraitCollection *t
     BOOL dark = self.traitCollection.userInterfaceStyle == UIUserInterfaceStyleDark;
     NSString *path = [QSPrefsBundle() pathForResource:dark ? @"banner-dark" : @"banner-light" ofType:@"png"];
     self.bannerView.image = path ? [UIImage imageWithContentsOfFile:path] : nil;
-    self.table.tableHeaderView = self.bannerView.image ? self.bannerView : nil;
+    UIImage *image = self.bannerView.image;
+    UIView *header = image && image.size.width > 0 && image.size.height > 0 ? self.bannerHeaderView : nil;
+    if (self.table.tableHeaderView != header) self.table.tableHeaderView = header;
     [self.viewIfLoaded setNeedsLayout];
 }
 - (void)viewDidLayoutSubviews {
@@ -126,12 +134,13 @@ static UIImage *QSRowSymbol(NSString *name, UIColor *color, UITraitCollection *t
     CGFloat width = self.table.bounds.size.width;
     if (width <= 0) return;
     UIImage *image = self.bannerView.image;
-    if (image && image.size.width > 0) {
-        CGFloat height = floor(width * image.size.height / image.size.width);
-        CGRect frame = CGRectMake(0, 0, width, height);
-        if (!CGRectEqualToRect(self.bannerView.frame, frame)) {
-            self.bannerView.frame = frame;
-            self.table.tableHeaderView = self.bannerView;
+    if (image && image.size.width > 0 && image.size.height > 0) {
+        CGFloat imageHeight = floor(width * image.size.height / image.size.width);
+        self.bannerView.frame = CGRectMake(0, 0, width, imageHeight);
+        CGRect frame = CGRectMake(0, 0, width, imageHeight + QSBannerBottomSpacing);
+        if (!CGRectEqualToRect(self.bannerHeaderView.frame, frame)) {
+            self.bannerHeaderView.frame = frame;
+            self.table.tableHeaderView = self.bannerHeaderView;
         }
     }
     CGSize size = [self.footerLabel sizeThatFits:CGSizeMake(MAX(1, width - 32), CGFLOAT_MAX)];

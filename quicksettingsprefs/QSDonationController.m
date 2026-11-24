@@ -225,20 +225,6 @@ static NSArray<NSDictionary<NSString *, NSString *> *> *QSWallets(void) {
 }
 @end
 
-static void QSAfterDonationSheet(UIAlertController *sheet, dispatch_block_t nextAction) {
-    dispatch_async(dispatch_get_main_queue(), ^{
-        if (sheet.isBeingDismissed && [sheet.transitionCoordinator animateAlongsideTransition:nil
-            completion:^(id<UIViewControllerTransitionCoordinatorContext> context) {
-                if (!context.isCancelled) nextAction();
-            }]) return;
-        if (sheet.presentingViewController) {
-            [sheet dismissViewControllerAnimated:YES completion:nextAction];
-        } else {
-            nextAction();
-        }
-    });
-}
-
 void QSPresentDonationMenu(UIViewController *controller, UIView *anchor) {
     NSCAssert(NSThread.isMainThread, @"The donation menu must be presented on the main thread");
     if (!QSCanPresent(controller)) return;
@@ -249,11 +235,11 @@ void QSPresentDonationMenu(UIViewController *controller, UIView *anchor) {
     __weak UIAlertController *weakSheet = sheet;
     [sheet addAction:[UIAlertAction actionWithTitle:@"Venmo" style:UIAlertActionStyleDefault
         handler:^(UIAlertAction *action) {
-            QSAfterDonationSheet(weakSheet, ^{ QSOpenVenmo(weakController); });
+            QSAfterAlertDismissal(weakSheet, ^{ QSOpenVenmo(weakController); });
         }]];
     [sheet addAction:[UIAlertAction actionWithTitle:@"Crypto" style:UIAlertActionStyleDefault
         handler:^(UIAlertAction *action) {
-            QSAfterDonationSheet(weakSheet, ^{
+            QSAfterAlertDismissal(weakSheet, ^{
                 UIViewController *presenter = weakController;
                 if (!QSCanPresent(presenter)) return;
                 UINavigationController *wallets = [[UINavigationController alloc]

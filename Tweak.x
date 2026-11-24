@@ -2,6 +2,7 @@
 #import "QSConstants.h"
 #import "QSPrivateInterfaces.h"
 #import "QSPaneResolver.h"
+#import "QSSettingsSupport.h"
 
 static BOOL QSIsOurItem(id item) {
     return QSCanCall(item, @selector(type), "@", "")
