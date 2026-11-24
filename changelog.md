@@ -1,5 +1,12 @@
 # QuickSettings Changelog
 
+## 1.0.2
+
+- Restores **App Settings** eligibility filtering from the earlier native Settings model; apps without a resolved app-specific destination no longer receive the action.
+- Preserves other quick actions and one asynchronous UIKit Settings request, with cancellation when preferences, eligibility, or the selected target change.
+- Caches native discovery separately from menu creation and opening requests, with bounded freshness and recovery. Unsupported or unavailable results stay hidden; restored built-in coverage and permission-only pages still require device verification.
+- Adds scoped release-metadata synchronization that preserves README exactly.
+
 ## 1.0.1
 
 - Replaces the synchronous LaunchServices opener with one asynchronous UIKit Settings request after shortcut handling returns.
