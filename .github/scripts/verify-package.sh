@@ -70,7 +70,7 @@ assert info["CFBundleExecutable"] == "quicksettingsprefs"
 assert info["NSPrincipalClass"] == "QSRootListController"
 assert info["CFBundleVersion"] == info["CFBundleShortVersionString"] == version
 assert info["MinimumOSVersion"] == "15.0"
-assert plist(filter_path) == {"Filter": {"Bundles": ["com.apple.springboard", "com.apple.Preferences"]}}
+assert plist(filter_path) == {"Filter": {"Bundles": ["com.apple.springboard"]}}
 registration = plist(entry)["entry"]
 assert registration["bundle"] == "quicksettingsprefs" and registration["detail"] == "QSRootListController"
 assert registration["label"] == "QuickSettings" and registration["icon"] == "icon.png"
