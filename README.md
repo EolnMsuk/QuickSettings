@@ -1,6 +1,6 @@
 # QuickSettings
 
-**QuickSettings** adds **Settings** to Home Screen 3rd party application long-press context menus.
+**QuickSettings** adds **Settings** to 3rd party application long-press context menus.
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="quicksettingsprefs/Resources/banner-dark.png">
