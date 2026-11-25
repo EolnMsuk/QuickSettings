@@ -2,7 +2,7 @@
 
 **QuickSettings** adds **Settings** to 3rd party application long-press context menus.
 
-<img width="500" alt="QuickSettings" src="https://github.com/user-attachments/assets/41d971cc-50c7-482f-9176-e3bb1c8d513e" />
+<img width="600" alt="QuickSettings" src="https://github.com/user-attachments/assets/b8c5e419-8d81-4f76-ada5-5805339f2bb8" />
 
 ## Installation
 
