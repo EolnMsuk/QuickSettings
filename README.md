@@ -2,10 +2,7 @@
 
 **QuickSettings** adds **Settings** to 3rd party application long-press context menus.
 
-<picture>
-  <source media="(prefers-color-scheme: dark)" srcset="quicksettingsprefs/Resources/banner-dark.png">
-  <img src="quicksettingsprefs/Resources/banner-light.png" alt="QuickSettings by EolnMsuk — App settings. One press away." width="65%">
-</picture>
+<img width="300" alt="QuickSettings" src="https://github.com/user-attachments/assets/288e12d9-d9cf-43d4-a356-6b3b8d2a178f" />
 
 ## Installation
 
